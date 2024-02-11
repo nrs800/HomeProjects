@@ -58,6 +58,8 @@ def Shaper(bearing):
     if (bearing==4):
         melt = pd.melt(dfs2)
         
+    melt = melt["value"]
+        
     return melt
 
 
