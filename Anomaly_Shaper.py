@@ -15,4 +15,9 @@ filenames= filenames1+filenames2
 dfs = pd.DataFrame()
 for filename in filenames:
     df=pd.read_csv(filename, sep='\t', header= None)
-    dfs= pd.concat([dfs, df], axis = 1)
+    
+    df1 = df.iloc[0]
+    
+    dfs= pd.concat([dfs, df1], axis = 1)
+    
+melt = pd.melt(dfs)
