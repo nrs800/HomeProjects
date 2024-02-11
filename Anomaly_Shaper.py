@@ -37,7 +37,7 @@ def Shaper(bearing):
     
         dfs3= pd.concat([dfs3, df3], axis = 1)
         
-        df4 = df.iloc[:, lambda df: [4]]
+        df4 = df.iloc[:, lambda df: [3]]
     
         dfs4= pd.concat([dfs4, df4], axis = 1)
     
