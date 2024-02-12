@@ -22,6 +22,14 @@ from numpy.random import seed
 import tensorflow as tf
 #from tensorflow import set_random_seed
 
+
+
+tf.keras.utils.set_random_seed(10)
+
+# random.seed(seed)
+# np.random.seed(seed)
+# tf.random.set_seed(seed)
+
 #tf.logging.set_verbosity(tf.logging.ERROR)
 
 
@@ -35,3 +43,6 @@ wave_data = Shaper(bearing)
 
 fig, ax = plt.subplot()
 ax.plot(wave_data, label = 'bearing', linewidth = 1)
+
+plot = wave_data.plot()
+
