@@ -6,23 +6,20 @@ Created on Sun Feb 11 13:03:40 2024
 @author: nathanaelseay
 """
 # import libraries
-
 import pandas as pd
 from Anomaly_Shaper import Shaper
 import os
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-#from sklearn.externals import joblib
+import joblib
 import seaborn as sns
 sns.set(color_codes=True)
 import matplotlib.pyplot as plt
-#%matplotlib inline
+# %matplotlib inline
 
 from numpy.random import seed
 import tensorflow as tf
-#from tensorflow import set_random_seed
-
-
+# from tensorflow import set_random_seed
 
 tf.keras.utils.set_random_seed(10)
 
@@ -30,8 +27,7 @@ tf.keras.utils.set_random_seed(10)
 # np.random.seed(seed)
 # tf.random.set_seed(seed)
 
-#tf.logging.set_verbosity(tf.logging.ERROR)
-
+# tf.logging.set_verbosity(tf.logging.ERROR)
 
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
 from keras.models import Model
@@ -39,27 +35,29 @@ from keras import regularizers
 
 bearing = 4
 
+
 wave_data = Shaper(bearing)
+plt.plot(wave_data, label='bearing', linewidth=1)
+plt.legend()
+plt.show()
 
-fig, ax = plt.subplot()
-ax.plot(wave_data, label = 'bearing', linewidth = 1)
+train_amount = int(len(wave_data) * 0.8)
+test_amount = len(wave_data)
 
-plot = wave_data.plot()
-
-
-
-train_amount= len(wave_data)*.8
-
-test_amount=len(wave_data)
-
-train_amount = int(train_amount)
-
-test_amount = int(test_amount)
-
-train = wave_data.iloc[1:train_amount]
-
-test = wave_data.iloc[train_amount:test_amount]
-
+train = wave_data.iloc[:train_amount]
+test = wave_data.iloc[train_amount:]
 
 print("Training dataset shape:", train.shape)
 print("Test dataset shape:", test.shape)
+
+scaler = MinMaxScaler()
+X_train = scaler.fit_transform(train.values.reshape(-1, 1)) 
+X_test = scaler.transform(test.values.reshape(-1, 1))  
+scaler_filename = "scaler_data"
+joblib.dump(scaler, scaler_filename)
+
+
+
+
+
+
