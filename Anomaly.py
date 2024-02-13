@@ -56,8 +56,34 @@ X_test = scaler.transform(test.values.reshape(-1, 1))
 scaler_filename = "scaler_data"
 joblib.dump(scaler, scaler_filename)
 
+# define the autoencoder network model
+def autoencoder_model(X):
+    inputs = Input(shape=(X.shape[1]))
+    L1 = LSTM(16, activation='relu', return_sequences=True, 
+              kernel_regularizer=regularizers.l2(0.00))(inputs)
+    L2 = LSTM(4, activation='relu', return_sequences=False)(L1)
+    L3 = RepeatVector(X.shape[1])(L2)
+    L4 = LSTM(4, activation='relu', return_sequences=True)(L3)
+    L5 = LSTM(16, activation='relu', return_sequences=True)(L4)
+    output = TimeDistributed(Dense(X.shape[1]))(L5)    
+    model = Model(inputs=inputs, outputs=output)
+    return model
 
+model = autoencoder_model(X_train)
+model.compile(optimizer='adam', loss='mae')
+model.summary()
 
+nb_epochs = 100
+batch_size = 10
+history = model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size,
+                    validation_split=0.05).history
 
-
+fig, ax = plt.subplots(figsize=(14, 6), dpi=80)
+ax.plot(history['loss'], 'b', label='Train', linewidth=2)
+ax.plot(history['val_loss'], 'r', label='Validation', linewidth=2)
+ax.set_title('Model loss', fontsize=16)
+ax.set_ylabel('Loss (mae)')
+ax.set_xlabel('Epoch')
+ax.legend(loc='upper right')
+plt.show()
 
