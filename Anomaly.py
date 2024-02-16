@@ -73,7 +73,7 @@ model = autoencoder_model(X_train)
 model.compile(optimizer='adam', loss='mae')
 model.summary()
 
-nb_epochs = 1
+nb_epochs = 15
 batch_size = 10
 history = model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size,
                     validation_split=0.05).history
