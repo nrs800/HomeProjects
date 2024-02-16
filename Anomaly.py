@@ -73,7 +73,7 @@ model = autoencoder_model(X_train)
 model.compile(optimizer='adam', loss='mae')
 model.summary()
 
-nb_epochs = 100
+nb_epochs = 1
 batch_size = 10
 history = model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size,
                     validation_split=0.05).history
@@ -86,4 +86,27 @@ ax.set_ylabel('Loss (mae)')
 ax.set_xlabel('Epoch')
 ax.legend(loc='upper right')
 plt.show()
+
+
+X_pred = model.predict(X_train)
+X_pred = X_pred.reshape(X_pred.shape[0], X_pred.shape[2])
+X_pred = pd.DataFrame(X_pred)
+#X_pred.index = X_train.index
+
+
+scored = pd.DataFrame()
+#Xtrain = X_train.reshape(X_train.shape[0], X_train.shape[2])
+scored['Loss_mae'] = np.mean(np.abs(X_pred-X_train), axis = 1)
+
+min_value = scored['Loss_mae'].min()
+max_value = scored['Loss_mae'].max()
+
+range_ = max_value - min_value
+
+
+range_of=  range_*.98
+
+threshold = min_value+ range_of
+
+
 
