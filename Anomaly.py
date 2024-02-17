@@ -122,11 +122,11 @@ joblib.dump(scaler, scaler_filename)
 # define the autoencoder network model
 def autoencoder_model(X):
     inputs = Input(shape=(X.shape[1], 1))  
-    L1 = LSTM(4, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.00))(inputs)
-    L2 = LSTM(1, activation='relu', return_sequences=False)(L1)
+    L1 = LSTM(16, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.00))(inputs)
+    L2 = LSTM(4, activation='relu', return_sequences=False)(L1)
     L3 = RepeatVector(X.shape[1])(L2)
-    L4 = LSTM(1, activation='relu', return_sequences=True)(L3)
-    L5 = LSTM(4, activation='relu', return_sequences=True)(L4)
+    L4 = LSTM(4, activation='relu', return_sequences=True)(L3)
+    L5 = LSTM(16, activation='relu', return_sequences=True)(L4)
     output = TimeDistributed(Dense(1))(L5)  
     model = Model(inputs=inputs, outputs=output)
     return model
@@ -170,6 +170,41 @@ range_ = max_value - min_value
 range_of=  range_*.98
 
 threshold = min_value+ range_of
+
+
+
+X_pred = model.predict(X_test)
+X_pred = X_pred.reshape(X_pred.shape[0], X_pred.shape[2])
+X_pred = pd.DataFrame(X_pred, columns=test.columns)
+X_pred.index = test.index
+
+scored = pd.DataFrame(index=test.index)
+Xtest = X_test.reshape(X_test.shape[0], X_test.shape[2])
+scored['Loss_mae'] = np.mean(np.abs(X_pred-Xtest), axis = 1)
+scored['Threshold'] = threshold
+scored['Anomaly'] = scored['Loss_mae'] > scored['Threshold']
+scored.head()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
