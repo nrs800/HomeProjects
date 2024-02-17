@@ -175,20 +175,53 @@ threshold = min_value+ range_of
 
 X_pred = model.predict(X_test)
 X_pred = X_pred.reshape(X_pred.shape[0], X_pred.shape[2])
-X_pred = pd.DataFrame(X_pred, columns=test.columns)
+X_pred = pd.DataFrame(X_pred)
 X_pred.index = test.index
 
 scored = pd.DataFrame(index=test.index)
-Xtest = X_test.reshape(X_test.shape[0], X_test.shape[2])
+Xtest = X_test.reshape(X_test.shape[0], X_test.shape[1])
 scored['Loss_mae'] = np.mean(np.abs(X_pred-Xtest), axis = 1)
 scored['Threshold'] = threshold
 scored['Anomaly'] = scored['Loss_mae'] > scored['Threshold']
 scored.head()
 
 
+def traceback(scored):
+    
+    #index files
+    #take in scored array
+    # add a column indicating which file it came from 
+    #if anomaly then return file
+    #delete repeats 
+    import glob
+    #import pandas as pd
+
+    # Get data file names
+    path1 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt1'
+    path2 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt2'
 
 
+    filenames1 = glob.glob(path1 + "/*.39")
+    filenames2 = glob.glob(path2 + "/*.39")
+    filenames= filenames1+filenames2
+    
+    sample_rate= 20480
+    entry_number= len(scored['Loss_mae'])
+    increment= entry_number/sample_rate
+    #every increment add 1 to file_number
+    fileID= pd.DataFrame()
+    j=1
+    for i in range(1,entry_number):
+        if i % increment:
+            j=j+1
+        index= j 
+        fileID.append(index)
+    scored=pd.concat(fileID, scored)
+    select_color = scored.loc[df['Anomaly'] == 'True']
 
+    
+    
+ID_scored=traceback(scored)
 
 
 
