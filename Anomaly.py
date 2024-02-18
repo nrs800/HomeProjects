@@ -47,19 +47,11 @@ filenames= filenames1+filenames2
 
 
 
-def Shaper(bearing):
-
-    import glob
-    #import pandas as pd
-
-    # Get data file names
-    path1 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt1'
-    path2 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt2'
+def Shaper(bearing, filenames):
 
 
-    filenames1 = glob.glob(path1 + "/*.39")
-    filenames2 = glob.glob(path2 + "/*.39")
-    filenames= filenames1+filenames2
+
+  
 
     dfs1 = pd.DataFrame()
     dfs2 = pd.DataFrame()
@@ -112,7 +104,7 @@ def Shaper(bearing):
 bearing = 4
 
 
-wave_data = Shaper(bearing)
+wave_data = Shaper(bearing, filenames)
 plt.plot(wave_data, label='bearing', linewidth=1)
 plt.legend()
 plt.show()
@@ -201,11 +193,7 @@ scored.head()
 
 def traceback(scored, X_train):
     
-    #index files
-    #take in scored array
-    # add a column indicating which file it came from 
-    #if anomaly then return file
-    #delete repeats 
+
   
     import pandas as pd
    
@@ -214,7 +202,7 @@ def traceback(scored, X_train):
     entry_number= len(scored['Loss_mae'])
     print(entry_number)
     increment= entry_number/sample_rate
-    #every increment add 1 to file_number
+   
     fileID = []
     j = 1
     for i in range(0, entry_number):
@@ -226,8 +214,7 @@ def traceback(scored, X_train):
     ID_scored = scored.loc[scored['Anomaly'] == True]
     
     ID_scored = ID_scored.drop_duplicates(subset=['File_ID'])
-    #write a file with the id number and the corresponding file name
-    # Add a column for filelocation
+   
     ID_scored['file_pointer']=(ID_scored['File_ID']+len(X_train))/sample_rate
     return ID_scored
 
