@@ -141,7 +141,7 @@ model = autoencoder_model(X_train)
 model.compile(optimizer='adam', loss='mae')
 model.summary()
 
-nb_epochs = 15
+nb_epochs = 1
 batch_size = 10
 history = model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size,
                     validation_split=0.05).history
@@ -222,7 +222,7 @@ ID_scored=traceback(scored, X_train)
  
 file_pointer=(ID_scored['file_pointer']).astype(int) 
 
-file_pointer.drop_duplicates()
+file_pointer=file_pointer.drop_duplicates()
 
 for index in file_pointer:
     if 0 <= index < len(filenames):
