@@ -186,45 +186,43 @@ scored['Anomaly'] = scored['Loss_mae'] > scored['Threshold']
 scored.head()
 
 
-def traceback(scored):
+def traceback(scored, X_train):
     
     #index files
     #take in scored array
     # add a column indicating which file it came from 
     #if anomaly then return file
     #delete repeats 
-    import glob
+  
     import pandas as pd
-    import numpy as np
-
-    # Get data file names
-    path1 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt1'
-    path2 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt2'
-
-
-    filenames1 = glob.glob(path1 + "/*.39")
-    filenames2 = glob.glob(path2 + "/*.39")
-    filenames= filenames1+filenames2
+   
     
     sample_rate= 20480
     entry_number= len(scored['Loss_mae'])
+    print(entry_number)
     increment= entry_number/sample_rate
     #every increment add 1 to file_number
     fileID = []
     j = 1
     for i in range(0, entry_number):
-        if i % increment == 0:  # Check if the index is a multiple of the increment
-            j += 1
+        #if i % increment:  # Check if the index is a multiple of the increment
+        j=j+1
         fileID.append(j)
     scored['File_ID'] = fileID
+    #print(fileID)
     ID_scored = scored.loc[scored['Anomaly'] == True]
     
-    
+    ID_scored = ID_scored.drop_duplicates(subset=['File_ID'])
+    #write a file with the id number and the corresponding file name
+    # Add a column for filelocation
+    ID_scored['file_pointer']=(ID_scored['File_ID']+len(X_train))/sample_rate
     return ID_scored
 
-ID_scored=traceback(scored)
+ID_scored=traceback(scored, X_train)
  
- 
+file_pointer=(ID_scored['file_pointer']).astype(int) 
+
+file_pointer.drop_duplicates()
 
 
 
