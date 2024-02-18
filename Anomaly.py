@@ -224,13 +224,16 @@ file_pointer=(ID_scored['file_pointer']).astype(int)
 
 file_pointer=file_pointer.drop_duplicates()
 
+f = open("Anomaly_log.txt", "a")
+
 for index in file_pointer:
     if 0 <= index < len(filenames):
         print(f"File at index {index}: {filenames[index]}")
+        f.write(f"File at index {index}: {filenames[index]}")
     else:
         print(f"Index {index} is out of range.")
 
-
+f.close()
 
 
 
