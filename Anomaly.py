@@ -194,7 +194,8 @@ def traceback(scored):
     #if anomaly then return file
     #delete repeats 
     import glob
-    #import pandas as pd
+    import pandas as pd
+    import numpy as np
 
     # Get data file names
     path1 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt1'
@@ -209,19 +210,21 @@ def traceback(scored):
     entry_number= len(scored['Loss_mae'])
     increment= entry_number/sample_rate
     #every increment add 1 to file_number
-    fileID= pd.DataFrame()
-    j=1
-    for i in range(1,entry_number):
-        if i % increment:
-            j=j+1
-        index= j 
-        fileID.append(index)
-    scored=pd.concat(fileID, scored)
-    select_color = scored.loc[df['Anomaly'] == 'True']
+    fileID = []
+    j = 1
+    for i in range(0, entry_number):
+        if i % increment == 0:  # Check if the index is a multiple of the increment
+            j += 1
+        fileID.append(j)
+    scored['File_ID'] = fileID
+    ID_scored = scored.loc[scored['Anomaly'] == True]
+    
+    
+    return ID_scored
 
-    
-    
 ID_scored=traceback(scored)
+ 
+ 
 
 
 
