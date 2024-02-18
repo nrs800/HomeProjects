@@ -33,6 +33,19 @@ from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVec
 from keras.models import Model
 from keras import regularizers
 
+import glob
+#import pandas as pd
+
+# Get data file names
+path1 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt1'
+path2 = '/Users/nathanaelseay/Desktop/HomeProjects/LSTM-Autoencoder-for-Anomaly-Detection/Sensor Data/Bearing_Sensor_Data_pt2'
+
+
+filenames1 = glob.glob(path1 + "/*.39")
+filenames2 = glob.glob(path2 + "/*.39")
+filenames= filenames1+filenames2
+
+
 
 def Shaper(bearing):
 
@@ -223,6 +236,12 @@ ID_scored=traceback(scored, X_train)
 file_pointer=(ID_scored['file_pointer']).astype(int) 
 
 file_pointer.drop_duplicates()
+
+for index in file_pointer:
+    if 0 <= index < len(filenames):
+        print(f"File at index {index}: {filenames[index]}")
+    else:
+        print(f"Index {index} is out of range.")
 
 
 
