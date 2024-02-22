@@ -127,7 +127,7 @@ joblib.dump(scaler, scaler_filename)
 # define the autoencoder network model
 def autoencoder_model(X):
     inputs = Input(shape=(X.shape[1], 1))  
-    L1 = LSTM(64, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.001))(inputs)
+    L1 = LSTM(64, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.00))(inputs)
     L2 = LSTM(16, activation='relu', return_sequences=True)(L1)
     L3 = LSTM(4, activation='relu', return_sequences=False)(L2)
     L4 = RepeatVector(X.shape[1])(L3)
@@ -140,11 +140,11 @@ def autoencoder_model(X):
 
 
 model = autoencoder_model(X_train)
-model.compile(optimizer='adam', loss='mae')
+model.compile(optimizer='adam', loss='mse')
 model.summary()
 
-nb_epochs = 1
-batch_size = 10
+nb_epochs = 50
+batch_size = 512
 history = model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size,
                     validation_split=0.05).history
 
