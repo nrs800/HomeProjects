@@ -20,9 +20,9 @@ import matplotlib.pyplot as plt
 from numpy.random import seed
 import tensorflow as tf
 # from tensorflow import set_random_seed
-
+from tensorflow import keras
 tf.keras.utils.set_random_seed(10)
-
+from tensorflow.keras import layers
 # random.seed(seed)
 # np.random.seed(seed)
 # tf.random.set_seed(seed)
@@ -32,6 +32,8 @@ tf.keras.utils.set_random_seed(10)
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
 from keras.models import Model
 from keras import regularizers
+
+from kerastuner.tuners import RandomSearch
 
 import glob
 #import pandas as pd
@@ -125,28 +127,76 @@ scaler_filename = "scaler_data"
 joblib.dump(scaler, scaler_filename)
 
 # define the autoencoder network model
-def autoencoder_model(X):
-    inputs = Input(shape=(X.shape[1], 1))  
-    L1 = LSTM(64, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.00))(inputs)
-    L2 = LSTM(16, activation='relu', return_sequences=True)(L1)
-    L3 = LSTM(4, activation='relu', return_sequences=False)(L2)
-    L4 = RepeatVector(X.shape[1])(L3)
-    L5 = LSTM(4, activation='relu', return_sequences=True)(L4)
-    L6 = LSTM(16, activation='relu', return_sequences=True)(L5)
-    L7 = LSTM(64, activation='relu', return_sequences=True)(L6)
-    output = TimeDistributed(Dense(1, activation='relu'))(L7)  
-    model = Model(inputs=inputs, outputs=output)
-    return model
+# def autoencoder_model(X):
+#     inputs = Input(shape=(X.shape[1], 1))  
+#     L1 = LSTM(64, activation='relu', return_sequences=True, kernel_regularizer=regularizers.l2(0.00))(inputs)
+#     L2 = LSTM(16, activation='relu', return_sequences=True)(L1)
+#     L3 = LSTM(4, activation='relu', return_sequences=False)(L2)
+#     L4 = RepeatVector(X.shape[1])(L3)
+#     L5 = LSTM(4, activation='relu', return_sequences=True)(L4)
+#     L6 = LSTM(16, activation='relu', return_sequences=True)(L5)
+#     L7 = LSTM(64, activation='relu', return_sequences=True)(L6)
+#     output = TimeDistributed(Dense(1, activation='relu'))(L7)  
+#     model = Model(inputs=inputs, outputs=output)
+#     return model
+
+# Define the autoencoder model
+def build_autoencoder(hp):
+    inputs = keras.Input(shape=(timesteps, input_dim))
+    
+    # Define the encoder architecture with dropout
+    encoder = layers.LSTM(units=hp.Int('encoder_units', min_value=32, max_value=256, step=32),
+                          return_sequences=True)(inputs)
+    encoder = layers.Dropout(rate=hp.Float('encoder_dropout', min_value=0.0, max_value=0.5, step=0.1))(encoder)
+    
+    # Define the decoder architecture with dropout
+    decoder = layers.LSTM(units=hp.Int('decoder_units', min_value=32, max_value=256, step=32),
+                          return_sequences=True)(encoder)
+    decoder = layers.Dropout(rate=hp.Float('decoder_dropout', min_value=0.0, max_value=0.5, step=0.1))(decoder)
+    
+    # Define the output layer
+    outputs = layers.TimeDistributed(layers.Dense(input_dim))(decoder)
+    
+    # Build the autoencoder model
+    autoencoder = keras.Model(inputs, outputs)
+    autoencoder.compile(optimizer=keras.optimizers.Adam(hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])),
+                        loss='mse')
+    return autoencoder
+
+# Define the data dimensions
+timesteps = X_train.shape[1]
+input_dim = 1
 
 
-model = autoencoder_model(X_train)
-model.compile(optimizer='adam', loss='mse')
-model.summary()
+# Instantiate the Keras Tuner RandomSearch tuner
+tuner = RandomSearch(
+    build_autoencoder,
+    objective='val_loss',
+    max_trials=5,
+    executions_per_trial=3,
+    directory='my_dir',
+    project_name='lstm_autoencoder_tuning'
+)
 
-nb_epochs = 50
-batch_size = 512
-history = model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size,
-                    validation_split=0.05).history
+# Perform the hyperparameter search
+tuner.search(x=X_train, y=X_train, epochs=10, validation_split=0.2)
+
+# Get the best hyperparameters
+best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+
+# Build the model with the best hyperparameters and train it
+best_model = tuner.hypermodel.build(best_hps)
+history= best_model.fit(X_train, X_train, epochs=10, validation_split=0.2).history
+
+
+# model = autoencoder_model(X_train)
+# model.compile(optimizer='adam', loss='mse')
+# model.summary()
+
+# nb_epochs = 50
+# batch_size = 512
+# history = model.fit(X_train, X_train, epochs=nb_epochs, batch_size=batch_size,
+#                     validation_split=0.05).history
 
 fig, ax = plt.subplots(figsize=(14, 6), dpi=80)
 ax.plot(history['loss'], 'b', label='Train', linewidth=2)
@@ -158,7 +208,7 @@ ax.legend(loc='upper right')
 plt.show()
 
 
-X_pred = model.predict(X_train)
+X_pred = best_model.predict(X_train)
 X_pred = X_pred.reshape(X_pred.shape[0], X_pred.shape[2])
 X_pred = pd.DataFrame(X_pred)
 #X_pred.index = X_train.index
@@ -180,7 +230,7 @@ threshold = min_value+ range_of
 
 
 
-X_pred = model.predict(X_test)
+X_pred = best_model.predict(X_test)
 X_pred = X_pred.reshape(X_pred.shape[0], X_pred.shape[2])
 X_pred = pd.DataFrame(X_pred)
 X_pred.index = test.index
