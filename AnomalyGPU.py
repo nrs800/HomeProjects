@@ -33,7 +33,7 @@ from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVec
 from keras.models import Model
 from keras import regularizers
 
-from kerastuner.tuners import RandomSearch
+from keras_tuner.tuners import RandomSearch
 
 import glob
 #import pandas as pd
@@ -50,10 +50,6 @@ filenames= filenames1+filenames2
 
 
 def Shaper(bearing, filenames):
-
-
-
-  
 
     dfs1 = pd.DataFrame()
     dfs2 = pd.DataFrame()
@@ -100,8 +96,6 @@ def Shaper(bearing, filenames):
     melt = melt["value"]
         
     return melt
-
-
 
 bearing = 4
 
@@ -179,7 +173,7 @@ tuner = RandomSearch(
 )
 
 # Perform the hyperparameter search
-tuner.search(x=X_train, y=X_train, epochs=10, validation_split=0.2)
+tuner.search(x=X_train, y=X_train, epochs=10, validation_split=0.2, batch_size= 512)
 
 # Get the best hyperparameters
 best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
