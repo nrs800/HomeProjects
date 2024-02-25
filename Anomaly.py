@@ -112,6 +112,7 @@ scaler_filename = "scaler_data"
 joblib.dump(scaler, scaler_filename)
 
 # Define the autoencoder model
+
 def build_autoencoder(hp):
     inputs = keras.Input(shape=(timesteps, input_dim))
     
@@ -120,24 +121,34 @@ def build_autoencoder(hp):
                           return_sequences=True)(inputs)
     encoder = layers.Dropout(rate=hp.Float('encoder_dropout', min_value=0.0, max_value=0.5, step=0.1))(encoder)
     
+    # Define the number of LSTM layers in the encoder
+    for i in range(hp.Int('encoder_layers', 1, 3)):
+        encoder = layers.LSTM(units=hp.Int(f'encoder_units_layer_{i}', min_value=32, max_value=256, step=32),
+                              return_sequences=True)(encoder)
+        encoder = layers.Dropout(rate=hp.Float(f'encoder_dropout_layer_{i}', min_value=0.0, max_value=0.5, step=0.1))(encoder)
+    
     # Define the decoder architecture with dropout
     decoder = layers.LSTM(units=hp.Int('decoder_units', min_value=32, max_value=256, step=32),
                           return_sequences=True)(encoder)
     decoder = layers.Dropout(rate=hp.Float('decoder_dropout', min_value=0.0, max_value=0.5, step=0.1))(decoder)
+    
+    # Define the number of LSTM layers in the decoder
+    for i in range(hp.Int('decoder_layers', 1, 3)):
+        decoder = layers.LSTM(units=hp.Int(f'decoder_units_layer_{i}', min_value=32, max_value=256, step=32),
+                              return_sequences=True)(decoder)
+        decoder = layers.Dropout(rate=hp.Float(f'decoder_dropout_layer_{i}', min_value=0.0, max_value=0.5, step=0.1))(decoder)
     
     # Define the output layer
     outputs = layers.TimeDistributed(layers.Dense(input_dim))(decoder)
     
     # Build the autoencoder model
     autoencoder = keras.Model(inputs, outputs)
-    autoencoder.compile(optimizer=tf.keras.optimizers.legacy.Adam(hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])),
-                        loss='mse')
+    autoencoder.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])),loss='mse')
     return autoencoder
 
 # Define the data dimensions
 timesteps = X_train.shape[1]
 input_dim = 1
-
 
 # Instantiate the Keras Tuner RandomSearch tuner
 tuner = RandomSearch(
@@ -153,12 +164,11 @@ tuner = RandomSearch(
 tuner.search(x=X_train, y=X_train, epochs=10, validation_split=0.2)
 
 # Get the best hyperparameters
-best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
 # Build the model with the best hyperparameters and train it
 best_model = tuner.hypermodel.build(best_hps)
-history= best_model.fit(X_train, X_train, epochs=10, validation_split=0.2).history
-
+history = best_model.fit(X_train, X_train, epochs=10, validation_split=0.2).history
 
 fig, ax = plt.subplots(figsize=(14, 6), dpi=80)
 ax.plot(history['loss'], 'b', label='Train', linewidth=2)
