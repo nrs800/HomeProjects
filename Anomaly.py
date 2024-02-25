@@ -111,7 +111,7 @@ X_test = scaler.transform(test.values.reshape(-1, 1))
 scaler_filename = "scaler_data"
 joblib.dump(scaler, scaler_filename)
 
-# Define the autoencoder model
+# Define the autoencoder 
 
 def build_autoencoder(hp):
     inputs = keras.Input(shape=(timesteps, input_dim))
