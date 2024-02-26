@@ -74,6 +74,8 @@ wave_data = Shaper(bearing, filenames)
 plt.plot(wave_data, label='bearing', linewidth=1)
 plt.legend()
 plt.show()
+plt.savefig('Waveform.jpg')
+plt.savefig('Waveform.png')
 
 train_amount = int(len(wave_data) * 0.8)
 test_amount = len(wave_data)
@@ -140,6 +142,9 @@ best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 best_model = tuner.hypermodel.build(best_hps)
 history = best_model.fit(X_train, X_train, epochs=10, validation_split=0.2, batch_size=156).history
 
+best_model.save('Anomaly_detector.h5')
+print('Model Saved!')
+
 fig, ax = plt.subplots(figsize=(14, 6), dpi=80)
 ax.plot(history['loss'], 'b', label='Train', linewidth=2)
 ax.plot(history['val_loss'], 'r', label='Validation', linewidth=2)
@@ -148,6 +153,9 @@ ax.set_ylabel('Loss (mae)')
 ax.set_xlabel('Epoch')
 ax.legend(loc='upper right')
 plt.show()
+
+plt.savefig('Model_loss.jpg')
+plt.savefig('Model_loss.png')
 
 X_pred = best_model.predict(X_train)
 X_pred = X_pred.reshape(X_pred.shape[0], X_pred.shape[2])
