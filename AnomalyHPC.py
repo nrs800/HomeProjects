@@ -17,7 +17,6 @@ import tensorflow as tf
 from tensorflow import keras
 tf.keras.utils.set_random_seed(10)
 from tensorflow.keras import layers
-from keras.models import Model
 from keras_tuner.tuners import RandomSearch
 import glob
 
@@ -140,7 +139,7 @@ best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
 # Build the model with the best hyperparameters and train it
 best_model = tuner.hypermodel.build(best_hps)
-history = best_model.fit(X_train, X_train, epochs=10, validation_split=0.2, batch_size=156).history
+history = best_model.fit(X_train, X_train, epochs=10, validation_split=0.2, batch_size=256).history
 
 best_model.save('Anomaly_detector.h5')
 print('Model Saved!')

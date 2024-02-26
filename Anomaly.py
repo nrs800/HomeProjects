@@ -161,14 +161,14 @@ tuner = RandomSearch(
 )
 
 # Perform the hyperparameter search
-tuner.search(x=X_train, y=X_train, epochs=10, validation_split=0.2)
+tuner.search(x=X_train, y=X_train, epochs=10, validation_split=0.2, batch_size=256)
 
 # Get the best hyperparameters
 best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
 # Build the model with the best hyperparameters and train it
 best_model = tuner.hypermodel.build(best_hps)
-history = best_model.fit(X_train, X_train, epochs=10, validation_split=0.2).history
+history = best_model.fit(X_train, X_train, epochs=10, validation_split=0.2, batch_size=156).history
 
 fig, ax = plt.subplots(figsize=(14, 6), dpi=80)
 ax.plot(history['loss'], 'b', label='Train', linewidth=2)
@@ -216,12 +216,9 @@ scored.head()
 
 
 def traceback(scored, X_train):
-    
 
-  
     import pandas as pd
-   
-    
+
     sample_rate= 20480
     entry_number= len(scored['Loss_mae'])
     print(entry_number)
