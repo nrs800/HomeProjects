@@ -27,7 +27,7 @@ def file_call():
 
         for root, dirs, files in os.walk(directory):
             for file_name in files:
-                if file_name.endswith('.txt'):  # Process only text files
+                if file_name.endswith('.39'):  # Process only text files
                     file_path = os.path.join(root, file_name)
                     # with open(file_path, 'r') as file:
                     #     data = file.read()
@@ -36,9 +36,9 @@ def file_call():
         return imported_data
     
     current_directory = os.getcwd()  # Get the current working directory
+    global imported_files
     imported_files = import_files_in_directory(current_directory)
-    
-    return imported_files
+    return imported_files 
 
 def Shaper(bearing):
     
@@ -80,3 +80,27 @@ def Shaper(bearing):
     melt = melt["value"]
         
     return melt
+
+def plotting (wave_data, bearing):
+    fig = plt.plot(wave_data, label=f"bearing {bearing}", linewidth=1)
+    plt.legend()
+    fig.savefig('Waveform.jpg')
+    fig.savefig('Waveform.png')
+
+def train_test(wave_data, split):
+    train_amount = int(len(wave_data) * split)
+    test_amount = len(wave_data)
+
+    train = wave_data.iloc[:train_amount]
+    test = wave_data.iloc[train_amount:]
+
+    print("Training dataset shape:", train.shape)
+    print("Test dataset shape:", test.shape)
+
+    scaler = MinMaxScaler()
+    X_train = scaler.fit_transform(train.values.reshape(-1, 1)) 
+    X_test = scaler.transform(test.values.reshape(-1, 1))  
+    scaler_filename = "scaler_data"
+    joblib.dump(scaler, scaler_filename)
+    return X_train, X_test
+
