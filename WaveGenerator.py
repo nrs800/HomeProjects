@@ -73,7 +73,7 @@ def make_discriminator_model():
 
 
 # Hyperparameters
-epochs = 1000
+epochs = 10000
 noise_dim = 100
 batch_size = 32
 
